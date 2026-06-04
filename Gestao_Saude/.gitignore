@@ -1,0 +1,12 @@
+# Editor settings
+.vscode/
+**/.vscode/
+
+# Build outputs
+sigeh
+*.out
+*.o
+*.exe
+
+# macOS
+.DS_Store
