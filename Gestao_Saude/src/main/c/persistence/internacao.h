@@ -1,7 +1,7 @@
 #ifndef INTERNACAO_H
 #define INTERNACAO_H
 
-#include "core/hospital.h"
+#include "hospital.h"
 
 void menuInternacoes(void);
 

@@ -1,4 +1,4 @@
-#include "modules/internacao.h"
+#include "internacao.h"
 
 void menuInternacoes(void)
 {

@@ -1,6 +1,17 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -Iinclude
-SRC = src/app/main.c src/modules/paciente.c src/modules/medico.c src/modules/agendamento.c src/modules/ala.c src/modules/leito.c src/modules/internacao.c src/modules/triagem.c src/modules/relatorio.c
+CFLAGS = -Wall -Wextra -pedantic -Isrc/main/c/model -Isrc/main/c/persistence
+
+SRC = \
+	src/main/c/app/main.c \
+	src/main/c/persistence/paciente.c \
+	src/main/c/persistence/medico.c \
+	src/main/c/persistence/agendamento.c \
+	src/main/c/persistence/ala.c \
+	src/main/c/persistence/leito.c \
+	src/main/c/persistence/internacao.c \
+	src/main/c/persistence/triagem.c \
+	src/main/c/persistence/relatorio.c
+
 OUT = sigeh
 
 all:

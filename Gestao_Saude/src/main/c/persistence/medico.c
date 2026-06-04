@@ -1,4 +1,4 @@
-#include "modules/medico.h"
+#include "medico.h"
 
 void menuMedicos(void)
 {

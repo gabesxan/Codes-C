@@ -1,4 +1,4 @@
-#include "modules/ala.h"
+#include "ala.h"
 
 void menuAlas(void)
 {

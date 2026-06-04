@@ -1,4 +1,20 @@
-#include "modules/agendamento.h"
+#include "agendamento.h"
+
+int verificarConflitoMedico(int medicoId, char data[], char horario[])
+{
+    for (int i = 0; i < totalAgendamentos; i++)
+    {
+        if (agendamentos[i].medicoId == medicoId &&
+            strcmp(agendamentos[i].data, data) == 0 &&
+            strcmp(agendamentos[i].horario, horario) == 0 &&
+            strcmp(agendamentos[i].status, "CANCELADO") != 0)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 void menuAgendamentos(void)
 {
@@ -79,17 +95,7 @@ void menuAgendamentos(void)
             printf("Horario (HH:MM): ");
             scanf(" %[^\n]", horario);
 
-            for (int i = 0; i < totalAgendamentos; i++)
-            {
-                if (agendamentos[i].medicoId == medicoId &&
-                    strcmp(agendamentos[i].data, data) == 0 &&
-                    strcmp(agendamentos[i].horario, horario) == 0 &&
-                    strcmp(agendamentos[i].status, "CANCELADO") != 0)
-                {
-                    conflito = 1;
-                    break;
-                }
-            }
+            conflito = verificarConflitoMedico(medicoId, data, horario);
 
             if (conflito == 1)
             {

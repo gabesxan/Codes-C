@@ -1,4 +1,4 @@
-#include "modules/leito.h"
+#include "leito.h"
 
 void menuLeitos(void)
 {

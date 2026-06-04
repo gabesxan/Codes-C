@@ -1,4 +1,4 @@
-#include "modules/relatorio.h"
+#include "relatorio.h"
 
 void menuRelatorios(void)
 {

@@ -3,7 +3,7 @@
 **/.vscode/
 
 # Build outputs
-main
+/main
 sigeh
 *.out
 *.o
