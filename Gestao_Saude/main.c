@@ -329,49 +329,237 @@ int main(void)
         }
 
         case 2:
-            printf("\nVoce escolheu: Gerenciar Medicos\n");
-            printf("Modulo de medicos sera implementado depois.\n");
-            break;
+        {
+            int caso2;
 
+            do
+            {
+                printf("\n=============================================\n");
+                printf("MENU GERENCIAMENTO DE MEDICOS\n");
+                printf("=============================================\n");
+                printf("1. Cadastrar Medico\n");
+                printf("2. Listar Medicos\n");
+                printf("3. Editar Medico\n");
+                printf("4. Excluir Medico\n");
+                printf("0. Voltar ao Menu Principal\n");
+                printf("---------------------------------------------\n");
+                printf("Escolha uma opcao: ");
+
+                scanf("%d", &caso2);
+
+                switch (caso2)
+                {
+                case 1:
+                {
+                    if (totalMedicos >= MAX_MEDICOS)
+                    {
+                        printf("\nLimite de medicos atingido.\n");
+                        break;
+                    }
+
+                    medicos[totalMedicos].id = totalMedicos + 1;
+
+                    printf("\nNome: ");
+                    scanf(" %[^\n]", medicos[totalMedicos].nome);
+
+                    printf("CRM: ");
+                    scanf(" %[^\n]", medicos[totalMedicos].crm);
+
+                    printf("Especialidade: ");
+                    scanf(" %[^\n]", medicos[totalMedicos].especialidade);
+
+                    medicos[totalMedicos].ativo = 1;
+                    totalMedicos++;
+
+                    printf("\nMedico cadastrado com sucesso! ID: %d\n", medicos[totalMedicos - 1].id);
+                    break;
+                }
+                case 2:
+                {
+                    if (totalMedicos == 0)
+                    {
+                        printf("\nNenhum medico cadastrado.\n");
+                        break;
+                    }
+
+                    printf("\nLista de Medicos:\n");
+
+                    for (int i = 0; i < totalMedicos; i++)
+                    {
+                        if (medicos[i].ativo == 1)
+                        {
+                            printf("\nID: %d\n", medicos[i].id);
+                            printf("Nome: %s\n", medicos[i].nome);
+                            printf("CRM: %s\n", medicos[i].crm);
+                            printf("Especialidade: %s\n", medicos[i].especialidade);
+                        }
+                    }
+
+                    break;
+                }
+
+                case 3:
+                {
+                    int idBusca;
+                    int encontrado = 0;
+                    int opcaoEditar;
+
+                    printf("\nDigite o ID do medico que deseja editar: ");
+                    scanf("%d", &idBusca);
+
+                    for (int i = 0; i < totalMedicos; i++)
+                    {
+                        if (medicos[i].id == idBusca && medicos[i].ativo == 1)
+                        {
+                            encontrado = 1;
+
+                            printf("\nMedico encontrado:\n");
+                            printf("ID: %d\n", medicos[i].id);
+                            printf("Nome: %s\n", medicos[i].nome);
+                            printf("CRM: %s\n", medicos[i].crm);
+                            printf("Especialidade: %s\n", medicos[i].especialidade);
+
+                            printf("\nO que deseja editar?\n");
+                            printf("1. Nome\n");
+                            printf("2. CRM\n");
+                            printf("3. Especialidade\n");
+                            printf("0. Cancelar\n");
+                            printf("Escolha uma opcao: ");
+                            scanf("%d", &opcaoEditar);
+
+                            switch (opcaoEditar)
+                            {
+                            case 1:
+                                printf("Novo nome: ");
+                                scanf(" %[^\n]", medicos[i].nome);
+                                printf("\nNome atualizado com sucesso.\n");
+                                break;
+
+                            case 2:
+                                printf("Novo CRM: ");
+                                scanf(" %[^\n]", medicos[i].crm);
+                                printf("\nCRM atualizado com sucesso.\n");
+                                break;
+
+                            case 3:
+                                printf("Nova especialidade: ");
+                                scanf(" %[^\n]", medicos[i].especialidade);
+                                printf("\nEspecialidade atualizada com sucesso.\n");
+                                break;
+
+                            case 0:
+                                printf("\nEdicao cancelada.\n");
+                                break;
+
+                            default:
+                                printf("\nOpcao invalida.\n");
+                                break;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if (encontrado == 0)
+                    {
+                        printf("\nMedico nao encontrado ou inativo.\n");
+                    }
+
+                    break;
+                }
+
+                case 4:
+                {
+                    int idBusca;
+                    int encontrado = 0;
+
+                    printf("\nDigite o ID do medico que deseja excluir: ");
+                    scanf("%d", &idBusca);
+
+                    for (int i = 0; i < totalMedicos; i++)
+                    {
+                        if (medicos[i].id == idBusca && medicos[i].ativo == 1)
+                        {
+                            medicos[i].ativo = 0;
+                            encontrado = 1;
+
+                            printf("\nMedico removido com sucesso.\n");
+                            break;
+                        }
+                    }
+
+                    if (encontrado == 0)
+                    {
+                        printf("\nMedico nao encontrado ou ja inativo.\n");
+                    }
+
+                    break;
+                }
+
+                case 0:
+                    printf("\nVoltando ao menu principal...\n");
+                    break;
+
+                default:
+                    printf("\nOpcao invalida. Tente novamente.\n");
+                    break;
+                }
+
+            } while (caso2 != 0);
+
+            break;
+        }
         case 3:
+        {
             printf("\nVoce escolheu: Gerenciar Agendamentos\n");
             printf("Modulo de agendamentos sera implementado depois.\n");
             break;
+        }
 
         case 4:
+        {
             printf("\nVoce escolheu: Gerenciar Alas\n");
             printf("Modulo de alas sera implementado depois.\n");
             break;
+        }
 
         case 5:
+        {
             printf("\nVoce escolheu: Gerenciar Leitos\n");
             printf("Modulo de leitos sera implementado depois.\n");
             break;
+        }
 
         case 6:
+        {
             printf("\nVoce escolheu: Gerenciar Internacoes\n");
             printf("Modulo de internacoes sera implementado depois.\n");
             break;
+        }
 
         case 7:
+        {
             printf("\nVoce escolheu: Gerenciar Triagem\n");
             printf("Modulo de triagem sera implementado depois.\n");
             break;
+        }
 
         case 8:
+        {
             printf("\nVoce escolheu: Gerar Relatorios\n");
             printf("Modulo de relatorios sera implementado depois.\n");
             break;
-
+        }
         case 0:
+        {
             printf("\nEncerrando o SIGEH-DF...\n");
             break;
+        }
 
         default:
             printf("\nOpcao invalida. Tente novamente.\n");
             break;
         }
-
     } while (opcao != 0);
 
     return 0;
