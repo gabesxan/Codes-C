@@ -1,5 +1,67 @@
 #include "triagem.h"
 
+static int pontosResposta(int resposta, int pontos)
+{
+    return resposta == 1 ? pontos : 0;
+}
+
+static int bonusIdade(int idadePaciente)
+{
+    return (idadePaciente >= 60 || idadePaciente <= 5) ? 2 : 0;
+}
+
+static int bonusIdoso(int idadePaciente)
+{
+    return idadePaciente >= 60 ? 2 : 0;
+}
+
+static int bonusCrianca(int idadePaciente)
+{
+    return idadePaciente <= 5 ? 2 : 0;
+}
+
+static int buscarPaciente(int pacienteId)
+{
+    for (int i = 0; i < totalPacientes; i++)
+    {
+        if (pacientes[i].id == pacienteId && pacientes[i].ativo == 1)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static int pontuarTriagem(int tipoTriagem, int idadePaciente)
+{
+    switch (tipoTriagem)
+    {
+    case TRIAGEM_GERAL:
+        return triagemGeral(idadePaciente);
+    case TRIAGEM_ORTOPEDIA:
+        return triagemOrtopedia(idadePaciente);
+    case TRIAGEM_CARDIOLOGIA:
+        return triagemCardiologia(idadePaciente);
+    case TRIAGEM_PNEUMOLOGIA:
+        return triagemPneumologia(idadePaciente);
+    case TRIAGEM_PEDIATRIA:
+        return triagemPediatria(idadePaciente);
+    default:
+        return -1;
+    }
+}
+
+static void exibirTriagem(const Triagem *triagem)
+{
+    printf("\nID: %d\n", triagem->id);
+    printf("Paciente ID: %d\n", triagem->pacienteId);
+    printf("Tipo de triagem: ");
+    exibirTipo(triagem->tipoTriagem);
+    printf("\nPontuacao: %d\n", triagem->pontuacao);
+    printf("Classificacao: %s\n", triagem->classificacao);
+}
+
 void classificarTriagem(int pontuacao, char classificacao[])
 {
     if (pontuacao >= 8)
@@ -136,16 +198,11 @@ int triagemGeral(int idadePaciente)
     printf("Pressao alta? (1-Sim / 0-Nao): ");
     scanf("%d", &pressaoAlta);
 
-    if (febre == 1)
-        pontuacao += 2;
-    if (faltaAr == 1)
-        pontuacao += 5;
-    if (dorIntensa == 1)
-        pontuacao += 4;
-    if (pressaoAlta == 1)
-        pontuacao += 2;
-    if (idadePaciente >= 60 || idadePaciente <= 5)
-        pontuacao += 2;
+    pontuacao += pontosResposta(febre, 2);
+    pontuacao += pontosResposta(faltaAr, 5);
+    pontuacao += pontosResposta(dorIntensa, 4);
+    pontuacao += pontosResposta(pressaoAlta, 2);
+    pontuacao += bonusIdade(idadePaciente);
 
     return pontuacao;
 }
@@ -184,22 +241,14 @@ int triagemOrtopedia(int idadePaciente)
     printf("Perda de sensibilidade? (1-Sim / 0-Nao): ");
     scanf("%d", &perdaSensibilidade);
 
-    if (suspeitaFratura == 1)
-        pontuacao += 5;
-    if (deformidadeVisivel == 1)
-        pontuacao += 5;
-    if (dificuldadeMovimento == 1)
-        pontuacao += 4;
-    if (dorIntensa == 1)
-        pontuacao += 4;
-    if (inchacoIntenso == 1)
-        pontuacao += 2;
-    if (sangramento == 1)
-        pontuacao += 3;
-    if (perdaSensibilidade == 1)
-        pontuacao += 5;
-    if (idadePaciente >= 60 || idadePaciente <= 5)
-        pontuacao += 2;
+    pontuacao += pontosResposta(suspeitaFratura, 5);
+    pontuacao += pontosResposta(deformidadeVisivel, 5);
+    pontuacao += pontosResposta(dificuldadeMovimento, 4);
+    pontuacao += pontosResposta(dorIntensa, 4);
+    pontuacao += pontosResposta(inchacoIntenso, 2);
+    pontuacao += pontosResposta(sangramento, 3);
+    pontuacao += pontosResposta(perdaSensibilidade, 5);
+    pontuacao += bonusIdade(idadePaciente);
 
     return pontuacao;
 }
@@ -230,18 +279,12 @@ int triagemCardiologia(int idadePaciente)
     printf("Pressao alta? (1-Sim / 0-Nao): ");
     scanf("%d", &pressaoAlta);
 
-    if (dorPeito == 1)
-        pontuacao += 5;
-    if (faltaAr == 1)
-        pontuacao += 4;
-    if (desmaio == 1)
-        pontuacao += 5;
-    if (palpitacaoIntensa == 1)
-        pontuacao += 3;
-    if (pressaoAlta == 1)
-        pontuacao += 2;
-    if (idadePaciente >= 60)
-        pontuacao += 2;
+    pontuacao += pontosResposta(dorPeito, 5);
+    pontuacao += pontosResposta(faltaAr, 4);
+    pontuacao += pontosResposta(desmaio, 5);
+    pontuacao += pontosResposta(palpitacaoIntensa, 3);
+    pontuacao += pontosResposta(pressaoAlta, 2);
+    pontuacao += bonusIdoso(idadePaciente);
 
     return pontuacao;
 }
@@ -276,20 +319,13 @@ int triagemPneumologia(int idadePaciente)
     printf("Febre? (1-Sim / 0-Nao): ");
     scanf("%d", &febre);
 
-    if (faltaAr == 1)
-        pontuacao += 5;
-    if (chiadoPeito == 1)
-        pontuacao += 3;
-    if (tosseIntensa == 1)
-        pontuacao += 2;
-    if (dorRespirar == 1)
-        pontuacao += 3;
-    if (saturacaoBaixa == 1)
-        pontuacao += 5;
-    if (febre == 1)
-        pontuacao += 2;
-    if (idadePaciente >= 60 || idadePaciente <= 5)
-        pontuacao += 2;
+    pontuacao += pontosResposta(faltaAr, 5);
+    pontuacao += pontosResposta(chiadoPeito, 3);
+    pontuacao += pontosResposta(tosseIntensa, 2);
+    pontuacao += pontosResposta(dorRespirar, 3);
+    pontuacao += pontosResposta(saturacaoBaixa, 5);
+    pontuacao += pontosResposta(febre, 2);
+    pontuacao += bonusIdade(idadePaciente);
 
     return pontuacao;
 }
@@ -320,18 +356,12 @@ int triagemPediatria(int idadePaciente)
     printf("Dificuldade para respirar? (1-Sim / 0-Nao): ");
     scanf("%d", &dificuldadeRespirar);
 
-    if (febreAlta == 1)
-        pontuacao += 3;
-    if (vomitosPersistentes == 1)
-        pontuacao += 3;
-    if (convulsao == 1)
-        pontuacao += 6;
-    if (prostracaoIntensa == 1)
-        pontuacao += 5;
-    if (dificuldadeRespirar == 1)
-        pontuacao += 5;
-    if (idadePaciente <= 5)
-        pontuacao += 2;
+    pontuacao += pontosResposta(febreAlta, 3);
+    pontuacao += pontosResposta(vomitosPersistentes, 3);
+    pontuacao += pontosResposta(convulsao, 6);
+    pontuacao += pontosResposta(prostracaoIntensa, 5);
+    pontuacao += pontosResposta(dificuldadeRespirar, 5);
+    pontuacao += bonusCrianca(idadePaciente);
 
     return pontuacao;
 }
@@ -358,10 +388,10 @@ void menuTriagem(void)
         case 1:
         {
             int pacienteId;
-            int idadePaciente = 0;
-            int pacienteEncontrado = 0;
+            int indicePaciente;
+            int idadePaciente;
             int tipoTriagem;
-            int pontuacao = 0;
+            int pontuacao;
 
             if (totalTriagens >= MAX_TRIAGENS)
             {
@@ -372,21 +402,15 @@ void menuTriagem(void)
             printf("\nID do paciente: ");
             scanf("%d", &pacienteId);
 
-            for (int i = 0; i < totalPacientes; i++)
-            {
-                if (pacientes[i].id == pacienteId && pacientes[i].ativo == 1)
-                {
-                    pacienteEncontrado = 1;
-                    idadePaciente = pacientes[i].idade;
-                    break;
-                }
-            }
+            indicePaciente = buscarPaciente(pacienteId);
 
-            if (pacienteEncontrado == 0)
+            if (indicePaciente == -1)
             {
                 printf("\nPaciente nao encontrado ou inativo.\n");
                 break;
             }
+
+            idadePaciente = pacientes[indicePaciente].idade;
 
             tipoTriagem = escolherTriagem();
 
@@ -401,24 +425,10 @@ void menuTriagem(void)
                 break;
             }
 
-            switch (tipoTriagem)
+            pontuacao = pontuarTriagem(tipoTriagem, idadePaciente);
+
+            if (pontuacao < 0)
             {
-            case TRIAGEM_GERAL:
-                pontuacao = triagemGeral(idadePaciente);
-                break;
-            case TRIAGEM_ORTOPEDIA:
-                pontuacao = triagemOrtopedia(idadePaciente);
-                break;
-            case TRIAGEM_CARDIOLOGIA:
-                pontuacao = triagemCardiologia(idadePaciente);
-                break;
-            case TRIAGEM_PNEUMOLOGIA:
-                pontuacao = triagemPneumologia(idadePaciente);
-                break;
-            case TRIAGEM_PEDIATRIA:
-                pontuacao = triagemPediatria(idadePaciente);
-                break;
-            default:
                 printf("\nTipo de triagem invalido.\n");
                 break;
             }
@@ -434,10 +444,7 @@ void menuTriagem(void)
                 triagens[totalTriagens].classificacao);
 
             printf("\nTriagem registrada com sucesso.\n");
-            printf("Tipo de triagem: ");
-            exibirTipo(triagens[totalTriagens].tipoTriagem);
-            printf("\nPontuacao: %d\n", triagens[totalTriagens].pontuacao);
-            printf("Classificacao: %s\n", triagens[totalTriagens].classificacao);
+            exibirTriagem(&triagens[totalTriagens]);
 
             totalTriagens++;
             break;
@@ -460,12 +467,7 @@ void menuTriagem(void)
                 if (triagens[i].ativo == 1)
                 {
                     encontrouAtiva = 1;
-                    printf("\nID: %d\n", triagens[i].id);
-                    printf("Paciente ID: %d\n", triagens[i].pacienteId);
-                    printf("Tipo de triagem: ");
-                    exibirTipo(triagens[i].tipoTriagem);
-                    printf("\nPontuacao: %d\n", triagens[i].pontuacao);
-                    printf("Classificacao: %s\n", triagens[i].classificacao);
+                    exibirTriagem(&triagens[i]);
                 }
             }
 

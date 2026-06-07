@@ -1,6 +1,44 @@
 #include "agendamento.h"
 #include "triagem.h"
 
+static int buscarPaciente(int pacienteId)
+{
+    for (int i = 0; i < totalPacientes; i++)
+    {
+        if (pacientes[i].id == pacienteId && pacientes[i].ativo == 1)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static int mudarStatus(int id, const char status[])
+{
+    for (int i = 0; i < totalAgendamentos; i++)
+    {
+        if (agendamentos[i].id == id &&
+            strcmp(agendamentos[i].status, "AGENDADO") == 0)
+        {
+            strcpy(agendamentos[i].status, status);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static void exibirAgendamento(const Agendamento *agendamento)
+{
+    printf("\nID: %d\n", agendamento->id);
+    printf("Paciente ID: %d\n", agendamento->pacienteId);
+    printf("Medico ID: %d\n", agendamento->medicoId);
+    printf("Data: %s\n", agendamento->data);
+    printf("Horario: %s\n", agendamento->horario);
+    printf("Status: %s\n", agendamento->status);
+}
+
 int buscarAgenda(int medicoId, char data[], char horario[])
 {
     for (int i = 0; i < totalAgendamentos; i++)
@@ -19,18 +57,7 @@ int buscarAgenda(int medicoId, char data[], char horario[])
 
 int medicoOcupado(int medicoId, char data[], char horario[])
 {
-    for (int i = 0; i < totalAgendamentos; i++)
-    {
-        if (agendamentos[i].medicoId == medicoId &&
-            strcmp(agendamentos[i].data, data) == 0 &&
-            strcmp(agendamentos[i].horario, horario) == 0 &&
-            strcmp(agendamentos[i].status, "AGENDADO") == 0)
-        {
-            return 1;
-        }
-    }
-
-    return 0;
+    return buscarAgenda(medicoId, data, horario) != -1;
 }
 
 static int nivelRegiao(int regiaoPaciente, int regiaoMedico)
@@ -57,32 +84,12 @@ static int nivelRegiao(int regiaoPaciente, int regiaoMedico)
 
 int cancelarAgendamento(int id)
 {
-    for (int i = 0; i < totalAgendamentos; i++)
-    {
-        if (agendamentos[i].id == id &&
-            strcmp(agendamentos[i].status, "AGENDADO") == 0)
-        {
-            strcpy(agendamentos[i].status, "CANCELADO");
-            return 1;
-        }
-    }
-
-    return 0;
+    return mudarStatus(id, "CANCELADO");
 }
 
 int concluirAgendamento(int id)
 {
-    for (int i = 0; i < totalAgendamentos; i++)
-    {
-        if (agendamentos[i].id == id &&
-            strcmp(agendamentos[i].status, "AGENDADO") == 0)
-        {
-            strcpy(agendamentos[i].status, "CONCLUIDO");
-            return 1;
-        }
-    }
-
-    return 0;
+    return mudarStatus(id, "CONCLUIDO");
 }
 
 static int criarAgendamento(int pacienteId, int medicoId, char data[], char horario[])
@@ -358,7 +365,7 @@ void menuAgendamentos(void)
         case 1:
         {
             int pacienteId;
-            int pacienteEncontrado = 0;
+            int indicePaciente;
             int medicoSelecionado;
             char data[11];
             char horario[6];
@@ -372,16 +379,9 @@ void menuAgendamentos(void)
             printf("\nID do paciente: ");
             scanf("%d", &pacienteId);
 
-            for (int i = 0; i < totalPacientes; i++)
-            {
-                if (pacientes[i].id == pacienteId && pacientes[i].ativo == 1)
-                {
-                    pacienteEncontrado = 1;
-                    break;
-                }
-            }
+            indicePaciente = buscarPaciente(pacienteId);
 
-            if (pacienteEncontrado == 0)
+            if (indicePaciente == -1)
             {
                 printf("\nPaciente nao encontrado ou inativo.\n");
                 break;
@@ -419,12 +419,7 @@ void menuAgendamentos(void)
 
             for (int i = 0; i < totalAgendamentos; i++)
             {
-                printf("\nID: %d\n", agendamentos[i].id);
-                printf("Paciente ID: %d\n", agendamentos[i].pacienteId);
-                printf("Medico ID: %d\n", agendamentos[i].medicoId);
-                printf("Data: %s\n", agendamentos[i].data);
-                printf("Horario: %s\n", agendamentos[i].horario);
-                printf("Status: %s\n", agendamentos[i].status);
+                exibirAgendamento(&agendamentos[i]);
             }
 
             break;

@@ -1,5 +1,66 @@
 #include "paciente.h"
 
+static void listarRegioes(void)
+{
+    printf("1. Plano Piloto\n");
+    printf("2. Ceilandia\n");
+    printf("3. Taguatinga\n");
+    printf("4. Samambaia\n");
+    printf("5. Gama\n");
+    printf("6. Sobradinho\n");
+    printf("7. Guara\n");
+    printf("8. Aguas Claras\n");
+}
+
+static const char *nomeRegiao(int regiaoAdministrativa)
+{
+    switch (regiaoAdministrativa)
+    {
+    case 1:
+        return "Plano Piloto";
+    case 2:
+        return "Ceilandia";
+    case 3:
+        return "Taguatinga";
+    case 4:
+        return "Samambaia";
+    case 5:
+        return "Gama";
+    case 6:
+        return "Sobradinho";
+    case 7:
+        return "Guara";
+    case 8:
+        return "Aguas Claras";
+    default:
+        return "Nao informada";
+    }
+}
+
+static int buscarPaciente(int id)
+{
+    for (int i = 0; i < totalPacientes; i++)
+    {
+        if (pacientes[i].id == id && pacientes[i].ativo == 1)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static void exibirPaciente(const Paciente *paciente)
+{
+    printf("\nID: %d\n", paciente->id);
+    printf("Nome: %s\n", paciente->nome);
+    printf("CPF: %s\n", paciente->cpf);
+    printf("Idade: %d\n", paciente->idade);
+    printf("Telefone: %s\n", paciente->telefone);
+    printf("Sexo: %c\n", paciente->sexo);
+    printf("Regiao administrativa: %s\n", nomeRegiao(paciente->regiaoAdministrativa));
+}
+
 int cadastrarPaciente(const char nome[], const char cpf[], int idade, const char telefone[], char sexo, int regiaoAdministrativa)
 {
     if (totalPacientes >= MAX_PACIENTES)
@@ -34,6 +95,7 @@ int excluirPaciente(int id)
 
     return 0;
 }
+
 void menuPacientes(void)
 {
     int caso1;
@@ -57,43 +119,44 @@ void menuPacientes(void)
         {
         case 1:
         {
+            char nome[100];
+            char cpf[15];
+            int idade;
+            char telefone[20];
+            char sexo;
+            int regiaoAdministrativa;
+
             if (totalPacientes >= MAX_PACIENTES)
             {
                 printf("\nLimite de pacientes atingido.\n");
                 break;
             }
 
-            pacientes[totalPacientes].id = totalPacientes + 1;
-
             printf("\nNome: ");
-            scanf(" %[^\n]", pacientes[totalPacientes].nome);
+            scanf(" %[^\n]", nome);
 
             printf("CPF: ");
-            scanf(" %[^\n]", pacientes[totalPacientes].cpf);
+            scanf(" %[^\n]", cpf);
 
             printf("Idade: ");
-            scanf("%d", &pacientes[totalPacientes].idade);
+            scanf("%d", &idade);
 
             printf("Telefone: ");
-            scanf(" %[^\n]", pacientes[totalPacientes].telefone);
+            scanf(" %[^\n]", telefone);
 
             printf("Sexo (M/F/O): ");
-            scanf(" %c", &pacientes[totalPacientes].sexo);
+            scanf(" %c", &sexo);
 
             printf("Regiao administrativa do DF:\n");
-            printf("1. Plano Piloto\n");
-            printf("2. Ceilandia\n");
-            printf("3. Taguatinga\n");
-            printf("4. Samambaia\n");
-            printf("5. Gama\n");
-            printf("6. Sobradinho\n");
-            printf("7. Guara\n");
-            printf("8. Aguas Claras\n");
+            listarRegioes();
             printf("Escolha: ");
-            scanf("%d", &pacientes[totalPacientes].regiaoAdministrativa);
+            scanf("%d", &regiaoAdministrativa);
 
-            pacientes[totalPacientes].ativo = 1;
-            totalPacientes++;
+            if (cadastrarPaciente(nome, cpf, idade, telefone, sexo, regiaoAdministrativa) == 0)
+            {
+                printf("\nNao foi possivel cadastrar o paciente.\n");
+                break;
+            }
 
             printf("\nPaciente cadastrado com sucesso! ID: %d\n", pacientes[totalPacientes - 1].id);
             break;
@@ -113,44 +176,7 @@ void menuPacientes(void)
             {
                 if (pacientes[i].ativo == 1)
                 {
-                    printf("\nID: %d\n", pacientes[i].id);
-                    printf("Nome: %s\n", pacientes[i].nome);
-                    printf("CPF: %s\n", pacientes[i].cpf);
-                    printf("Idade: %d\n", pacientes[i].idade);
-                    printf("Telefone: %s\n", pacientes[i].telefone);
-                    printf("Sexo: %c\n", pacientes[i].sexo);
-                    printf("Regiao administrativa: ");
-
-                    switch (pacientes[i].regiaoAdministrativa)
-                    {
-                    case 1:
-                        printf("Plano Piloto\n");
-                        break;
-                    case 2:
-                        printf("Ceilandia\n");
-                        break;
-                    case 3:
-                        printf("Taguatinga\n");
-                        break;
-                    case 4:
-                        printf("Samambaia\n");
-                        break;
-                    case 5:
-                        printf("Gama\n");
-                        break;
-                    case 6:
-                        printf("Sobradinho\n");
-                        break;
-                    case 7:
-                        printf("Guara\n");
-                        break;
-                    case 8:
-                        printf("Aguas Claras\n");
-                        break;
-                    default:
-                        printf("Nao informada\n");
-                        break;
-                    }
+                    exibirPaciente(&pacientes[i]);
                 }
             }
 
@@ -160,127 +186,80 @@ void menuPacientes(void)
         case 3:
         {
             int idBusca;
-            int encontrado = 0;
             int opcaoEditar;
+            int indicePaciente;
 
             printf("\nDigite o ID do paciente que deseja editar: ");
             scanf("%d", &idBusca);
 
-            for (int i = 0; i < totalPacientes; i++)
-            {
-                if (pacientes[i].id == idBusca && pacientes[i].ativo == 1)
-                {
-                    encontrado = 1;
+            indicePaciente = buscarPaciente(idBusca);
 
-                    printf("\nPaciente encontrado:\n");
-                    printf("ID: %d\n", pacientes[i].id);
-                    printf("Nome: %s\n", pacientes[i].nome);
-                    printf("CPF: %s\n", pacientes[i].cpf);
-                    printf("Idade: %d\n", pacientes[i].idade);
-                    printf("Telefone: %s\n", pacientes[i].telefone);
-                    printf("Sexo: %c\n", pacientes[i].sexo);
-                    printf("Regiao administrativa: ");
-
-                    switch (pacientes[i].regiaoAdministrativa)
-                    {
-                    case 1:
-                        printf("Plano Piloto\n");
-                        break;
-                    case 2:
-                        printf("Ceilandia\n");
-                        break;
-                    case 3:
-                        printf("Taguatinga\n");
-                        break;
-                    case 4:
-                        printf("Samambaia\n");
-                        break;
-                    case 5:
-                        printf("Gama\n");
-                        break;
-                    case 6:
-                        printf("Sobradinho\n");
-                        break;
-                    case 7:
-                        printf("Guara\n");
-                        break;
-                    case 8:
-                        printf("Aguas Claras\n");
-                        break;
-                    default:
-                        printf("Nao informada\n");
-                        break;
-                    }
-
-                    printf("\nO que deseja editar?\n");
-                    printf("1. Nome\n");
-                    printf("2. CPF\n");
-                    printf("3. Idade\n");
-                    printf("4. Telefone\n");
-                    printf("5. Sexo\n");
-                    printf("6. Regiao administrativa\n");
-                    printf("0. Cancelar\n");
-                    printf("Escolha uma opcao: ");
-                    scanf("%d", &opcaoEditar);
-
-                    switch (opcaoEditar)
-                    {
-                    case 1:
-                        printf("Novo nome: ");
-                        scanf(" %[^\n]", pacientes[i].nome);
-                        break;
-
-                    case 2:
-                        printf("Novo CPF: ");
-                        scanf(" %[^\n]", pacientes[i].cpf);
-                        break;
-
-                    case 3:
-                        printf("Nova idade: ");
-                        scanf("%d", &pacientes[i].idade);
-                        break;
-
-                    case 4:
-                        printf("Novo telefone: ");
-                        scanf(" %[^\n]", pacientes[i].telefone);
-                        break;
-
-                    case 5:
-                        printf("Novo sexo (M/F/O): ");
-                        scanf(" %c", &pacientes[i].sexo);
-                        break;
-
-                    case 6:
-                        printf("Nova regiao administrativa do DF:\n");
-                        printf("1. Plano Piloto\n");
-                        printf("2. Ceilandia\n");
-                        printf("3. Taguatinga\n");
-                        printf("4. Samambaia\n");
-                        printf("5. Gama\n");
-                        printf("6. Sobradinho\n");
-                        printf("7. Guara\n");
-                        printf("8. Aguas Claras\n");
-                        printf("Escolha: ");
-                        scanf("%d", &pacientes[i].regiaoAdministrativa);
-                        break;
-
-                    case 0:
-                        printf("\nEdicao cancelada.\n");
-                        break;
-
-                    default:
-                        printf("\nOpcao invalida.\n");
-                        break;
-                    }
-
-                    printf("\nPaciente atualizado com sucesso.\n");
-                    break;
-                }
-            }
-
-            if (encontrado == 0)
+            if (indicePaciente == -1)
             {
                 printf("\nPaciente nao encontrado ou inativo.\n");
+                break;
+            }
+
+            printf("\nPaciente encontrado:\n");
+            exibirPaciente(&pacientes[indicePaciente]);
+
+            printf("\nO que deseja editar?\n");
+            printf("1. Nome\n");
+            printf("2. CPF\n");
+            printf("3. Idade\n");
+            printf("4. Telefone\n");
+            printf("5. Sexo\n");
+            printf("6. Regiao administrativa\n");
+            printf("0. Cancelar\n");
+            printf("Escolha uma opcao: ");
+            scanf("%d", &opcaoEditar);
+
+            switch (opcaoEditar)
+            {
+            case 1:
+                printf("Novo nome: ");
+                scanf(" %[^\n]", pacientes[indicePaciente].nome);
+                break;
+
+            case 2:
+                printf("Novo CPF: ");
+                scanf(" %[^\n]", pacientes[indicePaciente].cpf);
+                break;
+
+            case 3:
+                printf("Nova idade: ");
+                scanf("%d", &pacientes[indicePaciente].idade);
+                break;
+
+            case 4:
+                printf("Novo telefone: ");
+                scanf(" %[^\n]", pacientes[indicePaciente].telefone);
+                break;
+
+            case 5:
+                printf("Novo sexo (M/F/O): ");
+                scanf(" %c", &pacientes[indicePaciente].sexo);
+                break;
+
+            case 6:
+                printf("Nova regiao administrativa do DF:\n");
+                listarRegioes();
+                printf("Escolha: ");
+                scanf("%d", &pacientes[indicePaciente].regiaoAdministrativa);
+                break;
+
+            case 0:
+                printf("\nEdicao cancelada.\n");
+                break;
+
+            default:
+                printf("\nOpcao invalida.\n");
+                break;
+            }
+
+            if (opcaoEditar != 0)
+            {
+                printf("\nPaciente atualizado com sucesso.\n");
             }
 
             break;
@@ -289,7 +268,6 @@ void menuPacientes(void)
         case 4:
         {
             int idBusca;
-            int encontrado = 0;
 
             printf("\nDigite o ID do paciente que deseja excluir: ");
             scanf("%d", &idBusca);
@@ -299,11 +277,6 @@ void menuPacientes(void)
                 printf("\nPaciente removido com sucesso.\n");
             }
             else
-            {
-                printf("\nPaciente nao encontrado ou ja inativo.\n");
-            }
-
-            if (encontrado == 0)
             {
                 printf("\nPaciente nao encontrado ou ja inativo.\n");
             }

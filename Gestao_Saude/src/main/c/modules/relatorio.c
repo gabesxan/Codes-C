@@ -1,67 +1,69 @@
 #include "relatorio.h"
 
-static void nomeRegiao(int regiaoAdministrativa)
+static const char *nomeRegiao(int regiaoAdministrativa)
 {
     switch (regiaoAdministrativa)
     {
     case 1:
-        printf("Plano Piloto");
-        break;
+        return "Plano Piloto";
     case 2:
-        printf("Ceilandia");
-        break;
+        return "Ceilandia";
     case 3:
-        printf("Taguatinga");
-        break;
+        return "Taguatinga";
     case 4:
-        printf("Samambaia");
-        break;
+        return "Samambaia";
     case 5:
-        printf("Gama");
-        break;
+        return "Gama";
     case 6:
-        printf("Sobradinho");
-        break;
+        return "Sobradinho";
     case 7:
-        printf("Guara");
-        break;
+        return "Guara";
     case 8:
-        printf("Aguas Claras");
-        break;
+        return "Aguas Claras";
     default:
-        printf("Nao informada");
-        break;
+        return "Nao informada";
+    }
+}
+
+static int contarLeitos(int ocupado)
+{
+    int total = 0;
+
+    for (int i = 0; i < totalLeitos; i++)
+    {
+        if (leitos[i].ocupado == ocupado)
+        {
+            total++;
+        }
+    }
+
+    return total;
+}
+
+static int casoGrave(const char classificacao[])
+{
+    return strcmp(classificacao, "Emergencia") == 0 ||
+           strcmp(classificacao, "Muito prioritario") == 0;
+}
+
+static void exibirContagemPorRegiao(const char titulo[], int (*contador)(int))
+{
+    printf("\n%s\n", titulo);
+
+    for (int regiao = 1; regiao <= 8; regiao++)
+    {
+        printf("%s: %d\n", nomeRegiao(regiao), contador(regiao));
     }
 }
 
 int contarLeitosOcupados(void)
 {
-    int total = 0;
-
-    for (int i = 0; i < totalLeitos; i++)
-    {
-        if (leitos[i].ocupado == 1)
-        {
-            total++;
-        }
-    }
-
-    return total;
+    return contarLeitos(1);
 }
 
 int contarLivres(void)
 {
-    int total = 0;
-
-    for (int i = 0; i < totalLeitos; i++)
-    {
-        if (leitos[i].ocupado == 0)
-        {
-            total++;
-        }
-    }
-
-    return total;
+    return contarLeitos(0);
 }
 
 float taxaAla(int alaId)
@@ -124,13 +126,7 @@ int contarPacRegiao(int regiaoAdministrativa)
 
 void relPacRegiao(void)
 {
-    printf("\nPacientes ativos por regiao:\n");
-
-    for (int regiao = 1; regiao <= 8; regiao++)
-    {
-        nomeRegiao(regiao);
-        printf(": %d\n", contarPacRegiao(regiao));
-    }
+    exibirContagemPorRegiao("Pacientes ativos por regiao:", contarPacRegiao);
 }
 
 int contarEsp(const char especialidade[])
@@ -192,13 +188,7 @@ void espDemandada(char resultado[])
 
 void relMedRegiao(void)
 {
-    printf("\nMedicos ativos por regiao:\n");
-
-    for (int regiao = 1; regiao <= 8; regiao++)
-    {
-        nomeRegiao(regiao);
-        printf(": %d\n", contarMedRegiao(regiao));
-    }
+    exibirContagemPorRegiao("Medicos ativos por regiao:", contarMedRegiao);
 }
 
 int contarCasosGravesRegiao(int regiaoAdministrativa)
@@ -208,8 +198,7 @@ int contarCasosGravesRegiao(int regiaoAdministrativa)
     for (int i = 0; i < totalTriagens; i++)
     {
         if (triagens[i].ativo == 1 &&
-            (strcmp(triagens[i].classificacao, "Emergencia") == 0 ||
-             strcmp(triagens[i].classificacao, "Muito prioritario") == 0))
+            casoGrave(triagens[i].classificacao))
         {
             for (int j = 0; j < totalPacientes; j++)
             {
@@ -318,7 +307,7 @@ static void exibirRegiaoMaisCasosGraves(void)
     }
     else
     {
-        nomeRegiao(regiao);
+        printf("%s", nomeRegiao(regiao));
         printf(" (%d casos)\n", contarCasosGravesRegiao(regiao));
     }
 }

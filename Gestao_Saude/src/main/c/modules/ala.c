@@ -1,32 +1,26 @@
 #include "ala.h"
 
-static void nomeTipoAla(int tipo)
+static const char *nomeTipoAla(int tipo)
 {
     switch (tipo)
     {
     case ALA_INTERNACAO:
-        printf("Internacao");
-        break;
+        return "Internacao";
 
     case ALA_UTI:
-        printf("UTI");
-        break;
+        return "UTI";
 
     case ALA_OBSERVACAO:
-        printf("Observacao");
-        break;
+        return "Observacao";
 
     case ALA_PEDIATRIA:
-        printf("Pediatria");
-        break;
+        return "Pediatria";
 
     case ALA_CIRURGICA:
-        printf("Cirurgica");
-        break;
+        return "Cirurgica";
         
     default:
-        printf("Nao informado");
-        break;
+        return "Nao informado";
     }
 }
 
@@ -43,6 +37,15 @@ static void exibirOpcoesTipoAla(void)
     printf("3. Observacao\n");
     printf("4. Pediatria\n");
     printf("5. Cirurgica\n");
+}
+
+static void exibirAla(const Ala *ala)
+{
+    printf("\nID: %d\n", ala->id);
+    printf("Nome: %s\n", ala->nome);
+    printf("Tipo: %s\n", nomeTipoAla(ala->tipo));
+    printf("Total de leitos: %d\n", ala->totalLeitos);
+    printf("Leitos ocupados: %d\n", ala->leitosOcupados);
 }
 
 int cadastrarAla(const char nome[], int tipo, int totalLeitosAla)
@@ -102,21 +105,13 @@ void listarAlasPorTipo(int tipo)
 {
     int encontrou = 0;
 
-    printf("\nAlas do tipo ");
-    nomeTipoAla(tipo);
-    printf(":\n");
+    printf("\nAlas do tipo %s:\n", nomeTipoAla(tipo));
 
     for (int i = 0; i < totalAlas; i++)
     {
         if (alas[i].ativo == 1 && alas[i].tipo == tipo)
         {
-            printf("\nID: %d\n", alas[i].id);
-            printf("Nome: %s\n", alas[i].nome);
-            printf("Tipo: ");
-            nomeTipoAla(alas[i].tipo);
-            printf("\n");
-            printf("Total de leitos: %d\n", alas[i].totalLeitos);
-            printf("Leitos ocupados: %d\n", alas[i].leitosOcupados);
+            exibirAla(&alas[i]);
             encontrou = 1;
         }
     }
@@ -201,13 +196,7 @@ void menuAlas(void)
             {
                 if (alas[i].ativo == 1)
                 {
-                    printf("\nID: %d\n", alas[i].id);
-                    printf("Nome: %s\n", alas[i].nome);
-                    printf("Tipo: ");
-                    nomeTipoAla(alas[i].tipo);
-                    printf("\n");
-                    printf("Total de leitos: %d\n", alas[i].totalLeitos);
-                    printf("Leitos ocupados: %d\n", alas[i].leitosOcupados);
+                    exibirAla(&alas[i]);
                 }
             }
 

@@ -12,38 +12,51 @@ static void listarRegioes(void)
     printf("8. Aguas Claras\n");
 }
 
-static void nomeRegiao(int regiaoAdministrativa)
+static const char *nomeRegiao(int regiaoAdministrativa)
 {
     switch (regiaoAdministrativa)
     {
     case 1:
-        printf("Plano Piloto");
-        break;
+        return "Plano Piloto";
     case 2:
-        printf("Ceilandia");
-        break;
+        return "Ceilandia";
     case 3:
-        printf("Taguatinga");
-        break;
+        return "Taguatinga";
     case 4:
-        printf("Samambaia");
-        break;
+        return "Samambaia";
     case 5:
-        printf("Gama");
-        break;
+        return "Gama";
     case 6:
-        printf("Sobradinho");
-        break;
+        return "Sobradinho";
     case 7:
-        printf("Guara");
-        break;
+        return "Guara";
     case 8:
-        printf("Aguas Claras");
-        break;
+        return "Aguas Claras";
     default:
-        printf("Nao informada");
-        break;
+        return "Nao informada";
     }
+}
+
+static int buscarMedico(int id)
+{
+    for (int i = 0; i < totalMedicos; i++)
+    {
+        if (medicos[i].id == id && medicos[i].ativo == 1)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static void exibirMedico(const Medico *medico)
+{
+    printf("\nID: %d\n", medico->id);
+    printf("Nome: Dr(a). %s\n", medico->nome);
+    printf("CRM: CRM%s\n", medico->crm);
+    printf("Especialidade: %s\n", medico->especialidade);
+    printf("Regiao administrativa: %s\n", nomeRegiao(medico->regiaoAdministrativa));
 }
 
 int cadastrarMedico(const char nome[], const char crm[], const char especialidade[], int regiaoAdministrativa)
@@ -151,13 +164,7 @@ void menuMedicos(void)
             {
                 if (medicos[i].ativo == 1)
                 {
-                    printf("\nID: %d\n", medicos[i].id);
-                    printf("Nome: Dr(a). %s\n", medicos[i].nome);
-                    printf("CRM: CRM%s\n", medicos[i].crm);
-                    printf("Especialidade: %s\n", medicos[i].especialidade);
-                    printf("Regiao administrativa: ");
-                    nomeRegiao(medicos[i].regiaoAdministrativa);
-                    printf("\n");
+                    exibirMedico(&medicos[i]);
                 }
             }
 
@@ -167,77 +174,68 @@ void menuMedicos(void)
         case 3:
         {
             int idBusca;
-            int encontrado = 0;
             int opcaoEditar;
+            int indiceMedico;
 
             printf("\nDigite o ID do medico que deseja editar: ");
             scanf("%d", &idBusca);
 
-            for (int i = 0; i < totalMedicos; i++)
-            {
-                if (medicos[i].id == idBusca && medicos[i].ativo == 1)
-                {
-                    encontrado = 1;
+            indiceMedico = buscarMedico(idBusca);
 
-                    printf("\nMedico encontrado:\n");
-                    printf("ID: %d\n", medicos[i].id);
-                    printf("Nome: Dr(a). %s\n", medicos[i].nome);
-                    printf("CRM: CRM%s\n", medicos[i].crm);
-                    printf("Especialidade: %s\n", medicos[i].especialidade);
-                    printf("Regiao administrativa: ");
-                    nomeRegiao(medicos[i].regiaoAdministrativa);
-                    printf("\n");
-
-                    printf("\nO que deseja editar?\n");
-                    printf("1. Nome\n");
-                    printf("2. CRM\n");
-                    printf("3. Especialidade\n");
-                    printf("4. Regiao administrativa\n");
-                    printf("0. Cancelar\n");
-                    printf("Escolha uma opcao: ");
-                    scanf("%d", &opcaoEditar);
-
-                    switch (opcaoEditar)
-                    {
-                    case 1:
-                        printf("Novo nome do medico, sem Dr/Dr(a): ");
-                        scanf(" %[^\n]", medicos[i].nome);
-                        break;
-
-                    case 2:
-                        printf("Novo numero do CRM: ");
-                        scanf(" %[^\n]", medicos[i].crm);
-                        break;
-
-                    case 3:
-                        printf("Nova especialidade: ");
-                        scanf(" %[^\n]", medicos[i].especialidade);
-                        break;
-
-                    case 4:
-                        printf("Nova regiao administrativa do DF:\n");
-                        listarRegioes();
-                        printf("Escolha: ");
-                        scanf("%d", &medicos[i].regiaoAdministrativa);
-                        break;
-
-                    case 0:
-                        printf("\nEdicao cancelada.\n");
-                        break;
-
-                    default:
-                        printf("\nOpcao invalida.\n");
-                        break;
-                    }
-
-                    printf("\nMedico atualizado com sucesso.\n");
-                    break;
-                }
-            }
-
-            if (encontrado == 0)
+            if (indiceMedico == -1)
             {
                 printf("\nMedico nao encontrado ou inativo.\n");
+                break;
+            }
+
+            printf("\nMedico encontrado:\n");
+            exibirMedico(&medicos[indiceMedico]);
+
+            printf("\nO que deseja editar?\n");
+            printf("1. Nome\n");
+            printf("2. CRM\n");
+            printf("3. Especialidade\n");
+            printf("4. Regiao administrativa\n");
+            printf("0. Cancelar\n");
+            printf("Escolha uma opcao: ");
+            scanf("%d", &opcaoEditar);
+
+            switch (opcaoEditar)
+            {
+            case 1:
+                printf("Novo nome do medico, sem Dr/Dr(a): ");
+                scanf(" %[^\n]", medicos[indiceMedico].nome);
+                break;
+
+            case 2:
+                printf("Novo numero do CRM: ");
+                scanf(" %[^\n]", medicos[indiceMedico].crm);
+                break;
+
+            case 3:
+                printf("Nova especialidade: ");
+                scanf(" %[^\n]", medicos[indiceMedico].especialidade);
+                break;
+
+            case 4:
+                printf("Nova regiao administrativa do DF:\n");
+                listarRegioes();
+                printf("Escolha: ");
+                scanf("%d", &medicos[indiceMedico].regiaoAdministrativa);
+                break;
+
+            case 0:
+                printf("\nEdicao cancelada.\n");
+                break;
+
+            default:
+                printf("\nOpcao invalida.\n");
+                break;
+            }
+
+            if (opcaoEditar != 0)
+            {
+                printf("\nMedico atualizado com sucesso.\n");
             }
 
             break;

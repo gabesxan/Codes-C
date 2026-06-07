@@ -1,52 +1,112 @@
 #include "internacao.h"
 
+static int buscarPaciente(int pacienteId)
+{
+    for (int i = 0; i < totalPacientes; i++)
+    {
+        if (pacientes[i].id == pacienteId && pacientes[i].ativo == 1)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static int buscarLeito(int leitoId)
+{
+    for (int i = 0; i < totalLeitos; i++)
+    {
+        if (leitos[i].id == leitoId)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static int buscarAlaAtiva(int alaId)
+{
+    for (int i = 0; i < totalAlas; i++)
+    {
+        if (alas[i].id == alaId && alas[i].ativo == 1)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+static void ocuparLeito(int indiceLeito, int indiceAla, int pacienteId)
+{
+    leitos[indiceLeito].ocupado = 1;
+    leitos[indiceLeito].pacienteId = pacienteId;
+
+    if (indiceAla != -1)
+    {
+        alas[indiceAla].leitosOcupados++;
+    }
+}
+
+static void liberarLeito(int leitoId, int alaId)
+{
+    int indiceLeito = buscarLeito(leitoId);
+
+    if (indiceLeito != -1)
+    {
+        leitos[indiceLeito].ocupado = 0;
+        leitos[indiceLeito].pacienteId = 0;
+    }
+
+    for (int i = 0; i < totalAlas; i++)
+    {
+        if (alas[i].id == alaId && alas[i].leitosOcupados > 0)
+        {
+            alas[i].leitosOcupados--;
+            break;
+        }
+    }
+}
+
+static void exibirInternacao(const Internacao *internacao)
+{
+    printf("\nID: %d\n", internacao->id);
+    printf("Paciente ID: %d\n", internacao->pacienteId);
+    printf("Ala ID: %d\n", internacao->alaId);
+    printf("Leito ID: %d\n", internacao->leitoId);
+    printf("Entrada: %s\n", internacao->dataEntrada);
+    printf("Alta: %s\n", internacao->dataAlta);
+    printf("Status: %s\n", internacao->status);
+}
+
 int internarPaciente(int pacienteId, int leitoId, const char dataEntrada[])
 {
-    int pacienteEncontrado = 0;
-    int indiceLeito = -1;
-    int indiceAla = -1;
+    int indicePaciente;
+    int indiceLeito;
+    int indiceAla;
 
     if (totalInternacoes >= MAX_INTERNACOES)
     {
         return 0;
     }
 
-    for (int i = 0; i < totalPacientes; i++)
-    {
-        if (pacientes[i].id == pacienteId && pacientes[i].ativo == 1)
-        {
-            pacienteEncontrado = 1;
-            break;
-        }
-    }
+    indicePaciente = buscarPaciente(pacienteId);
 
-    if (pacienteEncontrado == 0)
+    if (indicePaciente == -1)
     {
         return 0;
     }
 
-    for (int i = 0; i < totalLeitos; i++)
-    {
-        if (leitos[i].id == leitoId)
-        {
-            indiceLeito = i;
-            break;
-        }
-    }
+    indiceLeito = buscarLeito(leitoId);
 
     if (indiceLeito == -1 || leitos[indiceLeito].ocupado == 1)
     {
         return 0;
     }
 
-    for (int i = 0; i < totalAlas; i++)
-    {
-        if (alas[i].id == leitos[indiceLeito].alaId && alas[i].ativo == 1)
-        {
-            indiceAla = i;
-            break;
-        }
-    }
+    indiceAla = buscarAlaAtiva(leitos[indiceLeito].alaId);
 
     internacoes[totalInternacoes].id = totalInternacoes + 1;
     internacoes[totalInternacoes].pacienteId = pacienteId;
@@ -56,13 +116,7 @@ int internarPaciente(int pacienteId, int leitoId, const char dataEntrada[])
     strcpy(internacoes[totalInternacoes].dataAlta, "00/00/0000");
     strcpy(internacoes[totalInternacoes].status, "INTERNADO");
 
-    leitos[indiceLeito].ocupado = 1;
-    leitos[indiceLeito].pacienteId = pacienteId;
-
-    if (indiceAla != -1)
-    {
-        alas[indiceAla].leitosOcupados++;
-    }
+    ocuparLeito(indiceLeito, indiceAla, pacienteId);
 
     totalInternacoes++;
 
@@ -77,25 +131,7 @@ int darAltaInternacao(int internacaoId, const char dataAlta[])
         {
             strcpy(internacoes[i].dataAlta, dataAlta);
             strcpy(internacoes[i].status, "ALTA");
-
-            for (int j = 0; j < totalLeitos; j++)
-            {
-                if (leitos[j].id == internacoes[i].leitoId)
-                {
-                    leitos[j].ocupado = 0;
-                    leitos[j].pacienteId = 0;
-                    break;
-                }
-            }
-
-            for (int j = 0; j < totalAlas; j++)
-            {
-                if (alas[j].id == internacoes[i].alaId && alas[j].leitosOcupados > 0)
-                {
-                    alas[j].leitosOcupados--;
-                    break;
-                }
-            }
+            liberarLeito(internacoes[i].leitoId, internacoes[i].alaId);
 
             return 1;
         }
@@ -103,6 +139,7 @@ int darAltaInternacao(int internacaoId, const char dataAlta[])
 
     return 0;
 }
+
 void menuInternacoes(void)
 {
     int caso6;
@@ -124,11 +161,12 @@ void menuInternacoes(void)
         {
         case 1:
         {
-            int pacienteId, leitoId;
+            int pacienteId;
+            int leitoId;
             int pacienteEncontrado = 0;
             int leitoEncontrado = 0;
             int indiceLeito = -1;
-            int indiceAla = -1;
+            char dataEntrada[11];
 
             if (totalInternacoes >= MAX_INTERNACOES)
             {
@@ -173,35 +211,14 @@ void menuInternacoes(void)
                 break;
             }
 
-            for (int i = 0; i < totalAlas; i++)
-            {
-                if (alas[i].id == leitos[indiceLeito].alaId && alas[i].ativo == 1)
-                {
-                    indiceAla = i;
-                    break;
-                }
-            }
-
-            internacoes[totalInternacoes].id = totalInternacoes + 1;
-            internacoes[totalInternacoes].pacienteId = pacienteId;
-            internacoes[totalInternacoes].alaId = leitos[indiceLeito].alaId;
-            internacoes[totalInternacoes].leitoId = leitoId;
-
             printf("Data de entrada (DD/MM/AAAA): ");
-            scanf(" %[^\n]", internacoes[totalInternacoes].dataEntrada);
+            scanf(" %[^\n]", dataEntrada);
 
-            strcpy(internacoes[totalInternacoes].dataAlta, "00/00/0000");
-            strcpy(internacoes[totalInternacoes].status, "INTERNADO");
-
-            leitos[indiceLeito].ocupado = 1;
-            leitos[indiceLeito].pacienteId = pacienteId;
-
-            if (indiceAla != -1)
+            if (internarPaciente(pacienteId, leitoId, dataEntrada) == 0)
             {
-                alas[indiceAla].leitosOcupados++;
+                printf("\nNao foi possivel internar o paciente.\n");
+                break;
             }
-
-            totalInternacoes++;
 
             printf("\nPaciente internado com sucesso! ID da internacao: %d\n", internacoes[totalInternacoes - 1].id);
             break;
@@ -211,6 +228,7 @@ void menuInternacoes(void)
         {
             int idBusca;
             int encontrado = 0;
+            char dataAlta[11];
 
             printf("\nDigite o ID da internacao: ");
             scanf("%d", &idBusca);
@@ -219,32 +237,7 @@ void menuInternacoes(void)
             {
                 if (internacoes[i].id == idBusca && strcmp(internacoes[i].status, "INTERNADO") == 0)
                 {
-                    printf("Data de alta (DD/MM/AAAA): ");
-                    scanf(" %[^\n]", internacoes[i].dataAlta);
-
-                    strcpy(internacoes[i].status, "ALTA");
-
-                    for (int j = 0; j < totalLeitos; j++)
-                    {
-                        if (leitos[j].id == internacoes[i].leitoId)
-                        {
-                            leitos[j].ocupado = 0;
-                            leitos[j].pacienteId = 0;
-                            break;
-                        }
-                    }
-
-                    for (int j = 0; j < totalAlas; j++)
-                    {
-                        if (alas[j].id == internacoes[i].alaId && alas[j].leitosOcupados > 0)
-                        {
-                            alas[j].leitosOcupados--;
-                            break;
-                        }
-                    }
-
                     encontrado = 1;
-                    printf("\nAlta registrada com sucesso.\n");
                     break;
                 }
             }
@@ -252,6 +245,15 @@ void menuInternacoes(void)
             if (encontrado == 0)
             {
                 printf("\nInternacao nao encontrada ou ja finalizada.\n");
+                break;
+            }
+
+            printf("Data de alta (DD/MM/AAAA): ");
+            scanf(" %[^\n]", dataAlta);
+
+            if (darAltaInternacao(idBusca, dataAlta) == 1)
+            {
+                printf("\nAlta registrada com sucesso.\n");
             }
 
             break;
@@ -269,13 +271,7 @@ void menuInternacoes(void)
 
             for (int i = 0; i < totalInternacoes; i++)
             {
-                printf("\nID: %d\n", internacoes[i].id);
-                printf("Paciente ID: %d\n", internacoes[i].pacienteId);
-                printf("Ala ID: %d\n", internacoes[i].alaId);
-                printf("Leito ID: %d\n", internacoes[i].leitoId);
-                printf("Entrada: %s\n", internacoes[i].dataEntrada);
-                printf("Alta: %s\n", internacoes[i].dataAlta);
-                printf("Status: %s\n", internacoes[i].status);
+                exibirInternacao(&internacoes[i]);
             }
 
             break;
