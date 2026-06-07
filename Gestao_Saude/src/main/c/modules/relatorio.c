@@ -189,6 +189,7 @@ void espDemandada(char resultado[])
         strcpy(resultado, "Nenhuma");
     }
 }
+
 void relMedRegiao(void)
 {
     printf("\nMedicos ativos por regiao:\n");
@@ -200,7 +201,52 @@ void relMedRegiao(void)
     }
 }
 
-void menuRelatorios(void)
+int contarCasosGravesRegiao(int regiaoAdministrativa)
+{
+    int total = 0;
+
+    for (int i = 0; i < totalTriagens; i++)
+    {
+        if (triagens[i].ativo == 1 &&
+            (strcmp(triagens[i].classificacao, "Emergencia") == 0 ||
+             strcmp(triagens[i].classificacao, "Muito prioritario") == 0))
+        {
+            for (int j = 0; j < totalPacientes; j++)
+            {
+                if (pacientes[j].ativo == 1 &&
+                    pacientes[j].id == triagens[i].pacienteId &&
+                    pacientes[j].regiaoAdministrativa == regiaoAdministrativa)
+                {
+                    total++;
+                    break;
+                }
+            }
+        }
+    }
+
+    return total;
+}
+
+int regiaoMaisCasosGraves(void)
+{
+    int regiaoMaior = 0;
+    int maiorTotal = 0;
+
+    for (int regiao = 1; regiao <= 8; regiao++)
+    {
+        int total = contarCasosGravesRegiao(regiao);
+
+        if (total > maiorTotal)
+        {
+            maiorTotal = total;
+            regiaoMaior = regiao;
+        }
+    }
+
+    return regiaoMaior;
+}
+
+static void exibirTotaisGerais(void)
 {
     printf("\n=============================================\n");
     printf("RELATORIOS GERAIS\n");
@@ -212,6 +258,10 @@ void menuRelatorios(void)
     printf("Total de leitos cadastrados: %d\n", totalLeitos);
     printf("Total de internacoes cadastradas: %d\n", totalInternacoes);
     printf("Total de triagens cadastradas: %d\n", totalTriagens);
+}
+
+static void exibirTriagensClassificacao(void)
+{
     printf("\n=============================================\n");
     printf("\nTriagens por classificacao:\n");
     printf("Emergencia: %d\n", contarTriagens("Emergencia"));
@@ -219,10 +269,18 @@ void menuRelatorios(void)
     printf("Prioritario: %d\n", contarTriagens("Prioritario"));
     printf("Comum: %d\n", contarTriagens("Comum"));
     printf("Orientacao basica: %d\n", contarTriagens("Orientacao basica"));
+}
+
+static void exibirResumoLeitos(void)
+{
     printf("\n=============================================\n");
     printf("\nResumo de leitos:\n");
     printf("Leitos ocupados: %d\n", contarLeitosOcupados());
     printf("Leitos livres: %d\n", contarLivres());
+}
+
+static void exibirTaxaPorAla(void)
+{
     printf("\n=============================================\n");
     printf("\nLeitos ocupados por ala:\n");
     printf("\n----------------------------------------------\n");
@@ -231,25 +289,48 @@ void menuRelatorios(void)
     {
         if (alas[i].ativo == 1)
         {
-            float taxa = 0;
-
-            if (alas[i].totalLeitos > 0)
-            {
-                taxa = (alas[i].leitosOcupados * 100.0) / alas[i].totalLeitos;
-            }
+            float taxa = taxaAla(alas[i].id);
 
             printf("\nAla: %s\n", alas[i].nome);
             printf("Ocupados: %d/%d\n", alas[i].leitosOcupados, alas[i].totalLeitos);
             printf("Taxa de ocupacao: %.2f%%\n", taxa);
         }
     }
-   
-    {
-        char especialidade[50];
+}
 
-        espDemandada(especialidade);
-        printf("\nEspecialidade mais demandada: %s\n", especialidade);
+static void exibirEspecialidadeDemandada(void)
+{
+    char especialidade[50];
+
+    espDemandada(especialidade);
+    printf("\nEspecialidade mais demandada: %s\n", especialidade);
+}
+
+static void exibirRegiaoMaisCasosGraves(void)
+{
+    int regiao = regiaoMaisCasosGraves();
+
+    printf("\nRegiao com mais casos graves: ");
+
+    if (regiao == 0)
+    {
+        printf("Nenhuma\n");
     }
+    else
+    {
+        nomeRegiao(regiao);
+        printf(" (%d casos)\n", contarCasosGravesRegiao(regiao));
+    }
+}
+
+void menuRelatorios(void)
+{
+    exibirTotaisGerais();
+    exibirTriagensClassificacao();
+    exibirResumoLeitos();
+    exibirTaxaPorAla();
+    exibirEspecialidadeDemandada();
     relMedRegiao();
     relPacRegiao();
+    exibirRegiaoMaisCasosGraves();
 }

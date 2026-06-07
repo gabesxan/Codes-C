@@ -7,6 +7,7 @@ Medico medicos[MAX_MEDICOS];
 Agendamento agendamentos[MAX_AGENDAMENTOS];
 Ala alas[MAX_ALAS];
 Leito leitos[MAX_LEITOS];
+Internacao internacoes[MAX_INTERNACOES];
 Triagem triagens[MAX_TRIAGENS];
 
 int totalPacientes = 0;
@@ -20,12 +21,20 @@ int totalTriagens = 0;
 int main(void)
 {
     totalPacientes = 4;
+
+    pacientes[0].id = 1;
     pacientes[0].ativo = 1;
     pacientes[0].regiaoAdministrativa = 1;
+
+    pacientes[1].id = 2;
     pacientes[1].ativo = 1;
     pacientes[1].regiaoAdministrativa = 1;
+
+    pacientes[2].id = 3;
     pacientes[2].ativo = 1;
     pacientes[2].regiaoAdministrativa = 3;
+
+    pacientes[3].id = 4;
     pacientes[3].ativo = 0;
     pacientes[3].regiaoAdministrativa = 1;
 
@@ -44,8 +53,17 @@ int main(void)
     leitos[3].ocupado = 0;
 
     totalTriagens = 3;
+
+    triagens[0].pacienteId = 1;
+    triagens[0].ativo = 1;
     strcpy(triagens[0].classificacao, "Emergencia");
-    strcpy(triagens[1].classificacao, "Emergencia");
+
+    triagens[1].pacienteId = 2;
+    triagens[1].ativo = 1;
+    strcpy(triagens[1].classificacao, "Muito prioritario");
+
+    triagens[2].pacienteId = 3;
+    triagens[2].ativo = 1;
     strcpy(triagens[2].classificacao, "Comum");
 
     totalMedicos = 4;
@@ -89,7 +107,8 @@ int main(void)
     assert(taxaAla(1) == 50.0f);
     assert(taxaAla(99) == 0.0f);
 
-    assert(contarTriagens("Emergencia") == 2);
+    assert(contarTriagens("Emergencia") == 1);
+    assert(contarTriagens("Muito prioritario") == 1);
     assert(contarTriagens("Comum") == 1);
     assert(contarTriagens("Prioritario") == 0);
 
@@ -110,6 +129,11 @@ int main(void)
         espDemandada(especialidade);
         assert(strcmp(especialidade, "Cardiologia") == 0);
     }
+
+    assert(contarCasosGravesRegiao(1) == 2);
+    assert(contarCasosGravesRegiao(3) == 0);
+    assert(contarCasosGravesRegiao(8) == 0);
+    assert(regiaoMaisCasosGraves() == 1);
 
     return 0;
 }

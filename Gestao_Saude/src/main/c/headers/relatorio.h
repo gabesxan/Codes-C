@@ -14,5 +14,7 @@ int contarPacRegiao(int regiaoAdministrativa);
 void relPacRegiao(void);
 int contarEsp(const char especialidade[]);
 void espDemandada(char resultado[]);
+int contarCasosGravesRegiao(int regiaoAdministrativa);
+int regiaoMaisCasosGraves(void);
 
 #endif
