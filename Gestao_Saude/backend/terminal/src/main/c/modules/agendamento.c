@@ -1,6 +1,7 @@
 #include "agendamento.h"
 #include "prontuario.h"
 #include "triagem.h"
+#include "sqlite_db.h"
 
 static int buscarPaciente(int pacienteId)
 {
@@ -175,6 +176,91 @@ int criarAgendamentoTriagem(int pacienteId, char data[], char horario[], int *ag
     }
 
     return 1;
+}
+
+int salvarAgendamentoNoBanco(const Agendamento *agendamento)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *sql =
+        "INSERT OR REPLACE INTO agendamentos "
+        "(id, paciente_id, medico_id, data, horario, status) "
+        "VALUES (?, ?, ?, ?, ?, ?);";
+
+    if (agendamento == NULL)
+    {
+        return 0;
+    }
+
+    if (abrirBancoSQLite(&db) == 0)
+    {
+        return 0;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    sqlite3_bind_int(stmt, 1, agendamento->id);
+    sqlite3_bind_int(stmt, 2, agendamento->pacienteId);
+    sqlite3_bind_int(stmt, 3, agendamento->medicoId);
+    sqlite3_bind_text(stmt, 4, agendamento->data, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, agendamento->horario, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, agendamento->status, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+    {
+        sqlite3_finalize(stmt);
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
+    fecharBancoSQLite(db);
+    return 1;
+}
+
+int carregarAgendamentosDoBanco(Agendamento destino[], int maximo)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *sql =
+        "SELECT id, paciente_id, medico_id, data, horario, status "
+        "FROM agendamentos ORDER BY id;";
+    int totalCarregados = 0;
+
+    if (destino == NULL || maximo <= 0)
+    {
+        return 0;
+    }
+
+    if (abrirBancoSQLite(&db) == 0)
+    {
+        return 0;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW && totalCarregados < maximo)
+    {
+        destino[totalCarregados].id = sqlite3_column_int(stmt, 0);
+        destino[totalCarregados].pacienteId = sqlite3_column_int(stmt, 1);
+        destino[totalCarregados].medicoId = sqlite3_column_int(stmt, 2);
+        strcpy(destino[totalCarregados].data, (const char *)sqlite3_column_text(stmt, 3));
+        strcpy(destino[totalCarregados].horario, (const char *)sqlite3_column_text(stmt, 4));
+        strcpy(destino[totalCarregados].status, (const char *)sqlite3_column_text(stmt, 5));
+        totalCarregados++;
+    }
+
+    sqlite3_finalize(stmt);
+    fecharBancoSQLite(db);
+    return totalCarregados;
 }
 
 int copiarAgendamentos(Agendamento destino[], int maximo)

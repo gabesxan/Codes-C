@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <string.h>
 #include "agendamento.h"
+#include "sqlite_db.h"
 
 Paciente pacientes[MAX_PACIENTES];
 Medico medicos[MAX_MEDICOS];
@@ -87,6 +88,15 @@ int main(void)
     int medicoSelecionado;
     Agendamento lista[MAX_AGENDAMENTOS];
     int totalCopiados;
+
+    assert(executarSQLSQLite("DELETE FROM exames;") == 1);
+    assert(executarSQLSQLite("DELETE FROM prontuarios;") == 1);
+    assert(executarSQLSQLite("DELETE FROM agendamentos;") == 1);
+    assert(executarSQLSQLite("DELETE FROM triagens;") == 1);
+    assert(executarSQLSQLite("DELETE FROM pacientes;") == 1);
+    assert(executarSQLSQLite("DELETE FROM medicos;") == 1);
+    assert(executarSQLSQLite("INSERT INTO pacientes (id, nome, cpf, idade, telefone, sexo, regiao_administrativa, ativo) VALUES (501, 'Paciente Agenda', '501.501.501-50', 30, '(61) 95010-0000', 'F', 2, 1);") == 1);
+    assert(executarSQLSQLite("INSERT INTO medicos (id, nome, crm, especialidade, regiao_administrativa, ativo) VALUES (601, 'Medico Agenda', '601', 'Ortopedia', 2, 1);") == 1);
 
     assert(strcmp(obterEspecialidade(TRIAGEM_ORTOPEDIA), "Ortopedia") == 0);
     assert(strcmp(obterEspecialidade(TRIAGEM_CARDIOLOGIA), "Cardiologia") == 0);
@@ -184,6 +194,17 @@ int main(void)
 
     assert(copiarAgendamentosPorPaciente(1, NULL, MAX_AGENDAMENTOS) == 0);
     assert(copiarAgendamentosPorMedico(2, lista, 0) == 0);
+
+    resetarDados();
+    prepararAgendamento(501, 501, 601, "21/06/2026", "08:30", "AGENDADO");
+    assert(salvarAgendamentoNoBanco(&agendamentos[0]) == 1);
+    assert(salvarAgendamentoNoBanco(NULL) == 0);
+    totalCopiados = carregarAgendamentosDoBanco(lista, MAX_AGENDAMENTOS);
+    assert(totalCopiados == 1);
+    assert(lista[0].id == 501);
+    assert(lista[0].pacienteId == 501);
+    assert(lista[0].medicoId == 601);
+    assert(strcmp(lista[0].status, "AGENDADO") == 0);
 
     resetarDados();
     prepararPaciente(1, 2);

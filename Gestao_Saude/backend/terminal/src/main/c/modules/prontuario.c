@@ -1,5 +1,6 @@
 #include "prontuario.h"
 #include "agendamento.h"
+#include "sqlite_db.h"
 
 static int buscarPacienteAtivo(int pacienteId)
 {
@@ -232,6 +233,97 @@ int copiarProntuariosPorEspecialidade(const char especialidade[], Prontuario des
     }
 
     return totalCopiados;
+}
+
+int salvarProntuarioNoBanco(const Prontuario *prontuario)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *sql =
+        "INSERT OR REPLACE INTO prontuarios "
+        "(id, paciente_id, medico_id, data, observacoes, diagnostico, conduta, alerta_importante, ativo) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+    if (prontuario == NULL)
+    {
+        return 0;
+    }
+
+    if (abrirBancoSQLite(&db) == 0)
+    {
+        return 0;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    sqlite3_bind_int(stmt, 1, prontuario->id);
+    sqlite3_bind_int(stmt, 2, prontuario->pacienteId);
+    sqlite3_bind_int(stmt, 3, prontuario->medicoId);
+    sqlite3_bind_text(stmt, 4, prontuario->data, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, prontuario->observacoes, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, prontuario->diagnostico, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, prontuario->conduta, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 8, prontuario->alertaImportante);
+    sqlite3_bind_int(stmt, 9, prontuario->ativo);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+    {
+        sqlite3_finalize(stmt);
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
+    fecharBancoSQLite(db);
+    return 1;
+}
+
+int carregarProntuariosDoBanco(Prontuario destino[], int maximo)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *sql =
+        "SELECT id, paciente_id, medico_id, data, observacoes, diagnostico, conduta, alerta_importante, ativo "
+        "FROM prontuarios ORDER BY id;";
+    int totalCarregados = 0;
+
+    if (destino == NULL || maximo <= 0)
+    {
+        return 0;
+    }
+
+    if (abrirBancoSQLite(&db) == 0)
+    {
+        return 0;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW && totalCarregados < maximo)
+    {
+        destino[totalCarregados].id = sqlite3_column_int(stmt, 0);
+        destino[totalCarregados].pacienteId = sqlite3_column_int(stmt, 1);
+        destino[totalCarregados].medicoId = sqlite3_column_int(stmt, 2);
+        strcpy(destino[totalCarregados].data, (const char *)sqlite3_column_text(stmt, 3));
+        strcpy(destino[totalCarregados].observacoes, (const char *)sqlite3_column_text(stmt, 4));
+        strcpy(destino[totalCarregados].diagnostico, (const char *)sqlite3_column_text(stmt, 5));
+        strcpy(destino[totalCarregados].conduta, (const char *)sqlite3_column_text(stmt, 6));
+        destino[totalCarregados].alertaImportante = sqlite3_column_int(stmt, 7);
+        destino[totalCarregados].ativo = sqlite3_column_int(stmt, 8);
+        totalCarregados++;
+    }
+
+    sqlite3_finalize(stmt);
+    fecharBancoSQLite(db);
+    return totalCarregados;
 }
 
 int criarProntuarioAutomatico(int pacienteId, int medicoId, const char data[])

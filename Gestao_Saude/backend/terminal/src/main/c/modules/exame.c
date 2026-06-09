@@ -1,5 +1,6 @@
 #include "exame.h"
 #include "triagem.h"
+#include "sqlite_db.h"
 
 static int buscarPacienteAtivo(int pacienteId)
 {
@@ -258,6 +259,101 @@ int copiarExamesUrgentes(Exame destino[], int maximo)
     }
 
     return totalCopiados;
+}
+
+int salvarExameNoBanco(const Exame *exame)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *sql =
+        "INSERT OR REPLACE INTO exames "
+        "(id, paciente_id, medico_id, prontuario_id, tipo_exame, data_solicitacao, data_resultado, resultado, status, urgente, ativo) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+    if (exame == NULL)
+    {
+        return 0;
+    }
+
+    if (abrirBancoSQLite(&db) == 0)
+    {
+        return 0;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    sqlite3_bind_int(stmt, 1, exame->id);
+    sqlite3_bind_int(stmt, 2, exame->pacienteId);
+    sqlite3_bind_int(stmt, 3, exame->medicoId);
+    sqlite3_bind_int(stmt, 4, exame->prontuarioId);
+    sqlite3_bind_int(stmt, 5, exame->tipoExame);
+    sqlite3_bind_text(stmt, 6, exame->dataSolicitacao, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 7, exame->dataResultado, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 8, exame->resultado, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 9, exame->status, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 10, exame->urgente);
+    sqlite3_bind_int(stmt, 11, exame->ativo);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE)
+    {
+        sqlite3_finalize(stmt);
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    sqlite3_finalize(stmt);
+    fecharBancoSQLite(db);
+    return 1;
+}
+
+int carregarExamesDoBanco(Exame destino[], int maximo)
+{
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    const char *sql =
+        "SELECT id, paciente_id, medico_id, prontuario_id, tipo_exame, data_solicitacao, data_resultado, resultado, status, urgente, ativo "
+        "FROM exames ORDER BY id;";
+    int totalCarregados = 0;
+
+    if (destino == NULL || maximo <= 0)
+    {
+        return 0;
+    }
+
+    if (abrirBancoSQLite(&db) == 0)
+    {
+        return 0;
+    }
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        fecharBancoSQLite(db);
+        return 0;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW && totalCarregados < maximo)
+    {
+        destino[totalCarregados].id = sqlite3_column_int(stmt, 0);
+        destino[totalCarregados].pacienteId = sqlite3_column_int(stmt, 1);
+        destino[totalCarregados].medicoId = sqlite3_column_int(stmt, 2);
+        destino[totalCarregados].prontuarioId = sqlite3_column_int(stmt, 3);
+        destino[totalCarregados].tipoExame = sqlite3_column_int(stmt, 4);
+        strcpy(destino[totalCarregados].dataSolicitacao, (const char *)sqlite3_column_text(stmt, 5));
+        strcpy(destino[totalCarregados].dataResultado, (const char *)sqlite3_column_text(stmt, 6));
+        strcpy(destino[totalCarregados].resultado, (const char *)sqlite3_column_text(stmt, 7));
+        strcpy(destino[totalCarregados].status, (const char *)sqlite3_column_text(stmt, 8));
+        destino[totalCarregados].urgente = sqlite3_column_int(stmt, 9);
+        destino[totalCarregados].ativo = sqlite3_column_int(stmt, 10);
+        totalCarregados++;
+    }
+
+    sqlite3_finalize(stmt);
+    fecharBancoSQLite(db);
+    return totalCarregados;
 }
 
 int escolherTipoExame(void)

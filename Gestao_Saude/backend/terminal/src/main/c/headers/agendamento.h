@@ -9,6 +9,8 @@ int medicoOcupado(int medicoId, char data[], char horario[]);
 int cancelarAgendamento(int id);
 int concluirAgendamento(int id);
 int criarAgendamentoTriagem(int pacienteId, char data[], char horario[], int *agendamentoId, int *medicoId);
+int salvarAgendamentoNoBanco(const Agendamento *agendamento);
+int carregarAgendamentosDoBanco(Agendamento destino[], int maximo);
 int copiarAgendamentos(Agendamento destino[], int maximo);
 int copiarAgendamentosPorPaciente(int pacienteId, Agendamento destino[], int maximo);
 int copiarAgendamentosPorMedico(int medicoId, Agendamento destino[], int maximo);

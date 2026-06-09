@@ -10,6 +10,8 @@ int registrarResultadoExame(int exameId, const char dataResultado[],
                             const char resultado[]);
 int cancelarExame(int exameId);
 int excluirExame(int exameId);
+int salvarExameNoBanco(const Exame *exame);
+int carregarExamesDoBanco(Exame destino[], int maximo);
 int copiarExames(Exame destino[], int maximo);
 int copiarExamesPorPaciente(int pacienteId, Exame destino[], int maximo);
 int copiarExamesPorMedico(int medicoId, Exame destino[], int maximo);

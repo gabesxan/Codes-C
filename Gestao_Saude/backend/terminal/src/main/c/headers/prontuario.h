@@ -11,6 +11,8 @@ int complementarProntuario(int prontuarioId, const char observacoes[],
 int registrarProntuario(int pacienteId, int medicoId, const char data[],
                         const char observacoes[], const char diagnostico[],
                         const char conduta[], int alertaImportante);
+int salvarProntuarioNoBanco(const Prontuario *prontuario);
+int carregarProntuariosDoBanco(Prontuario destino[], int maximo);
 int copiarProntuarios(Prontuario destino[], int maximo);
 int copiarProntuariosPorPaciente(int pacienteId, Prontuario destino[], int maximo);
 int copiarProntuariosPorMedico(int medicoId, Prontuario destino[], int maximo);
